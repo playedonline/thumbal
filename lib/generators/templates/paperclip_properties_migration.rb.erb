@@ -1,0 +1,10 @@
+class CreatePaperclipProperties < ActiveRecord::Migration
+
+    def self.up
+        add_attachment :thumbs, :image
+    end
+
+    def self.down
+        remove_attachment :thumbs, :image
+    end
+end
