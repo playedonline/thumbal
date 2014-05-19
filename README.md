@@ -22,7 +22,7 @@ rails g thumbal thumb
 rake db:migrate
 
 To use thumbal's dashboard:
-<iframe id="optimization_frame" src="/thumbal?game_id=<%= game.present? ? game.id : '' %>&game_class_name=Game&thumb_url_method=thumb_url_small&game_name_method=name"></iframe>
+    <iframe id="optimization_frame" src="/thumbal?game_id=<%= game.present? ? game.id : '' %>&game_class_name=Game&thumb_url_method=thumb_url_small&game_name_method=name"></iframe>
 
 *game_id is the id of the object you're testing thumbs for
 *game_class_name is the name of the object's class
