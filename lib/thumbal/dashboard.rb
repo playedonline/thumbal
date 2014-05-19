@@ -38,7 +38,7 @@ module Thumbal
       end
 
 
-      ThumbnailOptimization::Helper.init_experiment(params[:game_id], params[:upload], params[:max_participants])
+      Thumbal::Helper.init_experiment(params[:game_id], params[:upload], params[:max_participants])
 
     end
 

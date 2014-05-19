@@ -11,15 +11,15 @@ module Thumbal
     end
 
     def self.all
-      ThumbnailOptimization.redis.smembers(:experiments).map { |e| find(e) }
+      Thumbal.redis.smembers(:experiments).map { |e| find(e) }
     end
 
     def self.active_experiments_names
-      ThumbnailOptimization.redis.smembers(:experiments)
+      Thumbal.redis.smembers(:experiments)
     end
 
     def self.find(name)
-      if ThumbnailOptimization.redis.smembers(:experiments).include? name
+      if Thumbal.redis.smembers(:experiments).include? name
         obj = self.new(name)
         obj.load_from_redis
       else
@@ -39,23 +39,23 @@ module Thumbal
       validate!
 
       if new_record?
-        ThumbnailOptimization.redis.sadd(:experiments, name)
+        Thumbal.redis.sadd(:experiments, name)
         @alternatives.reverse.each do |a|
-          ThumbnailOptimization.redis.lpush(name, a.name)
+          Thumbal.redis.lpush(name, a.name)
           a.set_unique_id self.version
           a.save
         end
 
-        ThumbnailOptimization.redis.set("%s:max_participants" % name, max_participants)
+        Thumbal.redis.set("%s:max_participants" % name, max_participants)
       else
 
         existing_alternatives = load_alternatives_from_redis
         unless existing_alternatives == @alternatives.map(&:name)
           reset
           @alternatives.each(&:delete)
-          ThumbnailOptimization.redis.lrange(@name, 0, -1).redis.del(@name)
+          Thumbal.redis.lrange(@name, 0, -1).redis.del(@name)
           @alternatives.reverse.each do |a|
-            ThumbnailOptimization.redis.lrange(@name, 0, -1).redis.lpush(name, a.name)
+            Thumbal.redis.lrange(@name, 0, -1).redis.lpush(name, a.name)
             a.set_unique_id self.version
           end
 
@@ -74,7 +74,7 @@ module Thumbal
     end
 
     def new_record?
-      !ThumbnailOptimization.redis.exists(name)
+      !Thumbal.redis.exists(name)
     end
 
     def ==(obj)
@@ -90,10 +90,10 @@ module Thumbal
         return
       end
       @alternatives = alts.map do |alternative|
-        if alternative.kind_of?(ThumbnailOptimization::Alternative)
+        if alternative.kind_of?(Thumbal::Alternative)
           alternative
         else
-          ThumbnailOptimization::Alternative.new(alternative, @name)
+          Thumbal::Alternative.new(alternative, @name)
         end
       end
     end
@@ -124,15 +124,15 @@ module Thumbal
 
 
     def winner
-      if w = ThumbnailOptimization.redis.hget(:experiment_winner, name)
-        ThumbnailOptimization::Alternative.new(w, name)
+      if w = Thumbal.redis.hget(:experiment_winner, name)
+        Thumbal::Alternative.new(w, name)
       else
         nil
       end
     end
 
     def winner=(winner_name)
-      ThumbnailOptimization.redis.hset(:experiment_winner, name, winner_name.to_s)
+      Thumbal.redis.hset(:experiment_winner, name, winner_name.to_s)
     end
 
     def set_winner
@@ -150,7 +150,7 @@ module Thumbal
     end
 
     def reset_winner
-      ThumbnailOptimization.redis.hdel(:experiment_winner, name)
+      Thumbal.redis.hdel(:experiment_winner, name)
     end
 
     def start_time
@@ -162,11 +162,11 @@ module Thumbal
     end
 
     def self.find_start_time_by_name_and_version (name, version)
-      t = ThumbnailOptimization.redis.hget(:experiment_start_times, "#{name}:#{version}")
+      t = Thumbal.redis.hget(:experiment_start_times, "#{name}:#{version}")
 
       # Backwards compatibility for existing experiments (from before adding exp. version to name)
       if (t.nil? && version.to_s == "0")
-        t = ThumbnailOptimization.redis.hget(:experiment_start_times, name)
+        t = Thumbal.redis.hget(:experiment_start_times, name)
       end
 
       if t
@@ -180,7 +180,7 @@ module Thumbal
     end
 
     def self.find_end_time_by_name_and_version (name, version)
-      t = ThumbnailOptimization.redis.hget(:experiment_end_times, "#{name}:#{version}")
+      t = Thumbal.redis.hget(:experiment_end_times, "#{name}:#{version}")
       if t
         # Check if stored time is an integer
         if t =~ /^[-+]?[0-9]+$/
@@ -204,11 +204,11 @@ module Thumbal
     end
 
     def version
-      @version ||= (ThumbnailOptimization.redis.get("#{name.to_s}:version").to_i || 0)
+      @version ||= (Thumbal.redis.get("#{name.to_s}:version").to_i || 0)
     end
 
     def increment_version
-      @version = ThumbnailOptimization.redis.incr("#{name}:version")
+      @version = Thumbal.redis.incr("#{name}:version")
     end
 
     def key
@@ -241,14 +241,14 @@ module Thumbal
     def delete
       alternatives.each(&:delete)
       reset_winner
-      ThumbnailOptimization.redis.srem(:experiments, name)
-      ThumbnailOptimization.redis.del(name)
+      Thumbal.redis.srem(:experiments, name)
+      Thumbal.redis.del(name)
       increment_version
     end
 
     def load_from_redis
       self.alternatives = load_alternatives_from_redis
-      self.max_participants = ThumbnailOptimization.redis.get("%s:max_participants" % self.name).to_i
+      self.max_participants = Thumbal.redis.get("%s:max_participants" % self.name).to_i
     end
 
 
@@ -275,27 +275,9 @@ module Thumbal
       "experiment_configurations/#{@name}"
     end
 
-    def load_goals_from_configuration
-      goals = ThumbnailOptimization.configuration.experiment_for(@name)[:goals]
-      if goals.nil?
-        goals = []
-      else
-        goals.flatten
-      end
-    end
-
-    def load_alternatives_from_configuration
-      alts = ThumbnailOptimization.configuration.experiment_for(@name)[:alternatives]
-      raise ArgumentError, "Experiment configuration is missing :alternatives array" unless alts
-      if alts.is_a?(Hash)
-        alts.keys
-      else
-        alts.flatten
-      end
-    end
 
     def load_alternatives_from_redis
-      ThumbnailOptimization.redis.lrange(@name, 0, -1)
+      Thumbal.redis.lrange(@name, 0, -1)
 
     end
 

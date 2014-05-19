@@ -63,7 +63,7 @@ module Thumbal
       active_test_names =  ThumbnailExperiment.uniq.where(is_active: 1).pluck('game_id')
       active_test_names.names do |id|
 
-        experiment = ThumbnailOptimization::Experiment.find(id.to_s)
+        experiment = Thumbal::Experiment.find(id.to_s)
         res[id] = start_experiment( experiment )
 
       end
@@ -80,7 +80,7 @@ module Thumbal
     end
 
     def ab_user
-      @ab_user ||= ThumbnailOptimization::CookieAdapter.new(self)
+      @ab_user ||= Thumbal::CookieAdapter.new(self)
     end
 
     def get_user_abtests_alt_ids

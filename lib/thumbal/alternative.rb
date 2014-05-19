@@ -14,31 +14,31 @@ module Thumbal
     end
 
     def self.get_all_historical_alternatives
-      ThumbnailOptimization.redis.lrange('all_alternative_ids', 0, -1).map do |alt_id|
-        alt_info = ThumbnailOptimization.redis.hmget "alternative_#{alt_id}_info", 'abtest_name', 'abtest_version', 'alternative_name', 'channel'
+      Thumbal.redis.lrange('all_alternative_ids', 0, -1).map do |alt_id|
+        alt_info = Thumbal.redis.hmget "alternative_#{alt_id}_info", 'abtest_name', 'abtest_version', 'alternative_name', 'channel'
         {:alt_id => alt_id, :abtest_name => alt_info[0], :abtest_version => alt_info[1], :alternative_name => alt_info[2], :channel => alt_info[3] }
       end
     end
 
     def set_unique_id experiment_version
-      if ThumbnailOptimization.redis.hsetnx key, 'unique_id', -1
-        next_id = ThumbnailOptimization.redis.incrby 'alternative_next_id', 1
-        ThumbnailOptimization.redis.hset key, 'unique_id', next_id
+      if Thumbal.redis.hsetnx key, 'unique_id', -1
+        next_id = Thumbal.redis.incrby 'alternative_next_id', 1
+        Thumbal.redis.hset key, 'unique_id', next_id
 
         # Will be used to fetch all historical data
-        ThumbnailOptimization.redis.lpush 'all_alternative_ids', next_id
-        ThumbnailOptimization.redis.hmset "alternative_#{next_id}_info", 'abtest_name', experiment_name, 'abtest_version', experiment_version, 'alternative_name', name
+        Thumbal.redis.lpush 'all_alternative_ids', next_id
+        Thumbal.redis.hmset "alternative_#{next_id}_info", 'abtest_name', experiment_name, 'abtest_version', experiment_version, 'alternative_name', name
       end
     end
 
     def self.find_alternative_unique_id experiment_name, alternative_name
       alternative_key = build_key experiment_name, alternative_name
-      id = ThumbnailOptimization.redis.hget alternative_key, 'unique_id'
+      id = Thumbal.redis.hget alternative_key, 'unique_id'
 
       # Just in case set_unique_id (which is not atomic and doesn't use locks is just in the middle of execution)
       if id.to_s == "-1"
         sleep 0.2.seconds
-        id = ThumbnailOptimization.redis.hget alternative_key, 'unique_id'
+        id = Thumbal.redis.hget alternative_key, 'unique_id'
       end
 
       id
@@ -49,23 +49,23 @@ module Thumbal
     end
 
     def participant_count
-      ThumbnailOptimization.redis.hget(key, 'participant_count').to_i
+      Thumbal.redis.hget(key, 'participant_count').to_i
     end
 
     def participant_count=(count)
-      ThumbnailOptimization.redis.hset(key, 'participant_count', count.to_i)
+      Thumbal.redis.hset(key, 'participant_count', count.to_i)
     end
 
     def record_click
-      ThumbnailOptimization.redis.incrby(key+":click", 1)
+      Thumbal.redis.incrby(key+":click", 1)
     end
 
     def clicks
-      ThumbnailOptimization.redis.get(key+":click").to_i
+      Thumbal.redis.get(key+":click").to_i
     end
 
     def increment_participation
-      ThumbnailOptimization.redis.hincrby key, 'participant_count', 1
+      Thumbal.redis.hincrby key, 'participant_count', 1
     end
 
     def control?
@@ -73,7 +73,7 @@ module Thumbal
     end
 
     def experiment
-      ThumbnailOptimization::Experiment.find(experiment_name)
+      Thumbal::Experiment.find(experiment_name)
     end
 
 
@@ -81,7 +81,7 @@ module Thumbal
 
       return 0 if participant_count.to_f == 0
 
-      clicks = ThumbnailOptimization.redis.get(key+":click").to_f
+      clicks = Thumbal.redis.get(key+":click").to_f
       impressions = participant_count.to_f
 
       clicks/impressions
@@ -89,8 +89,8 @@ module Thumbal
     end
 
     def save
-      ThumbnailOptimization.redis.hsetnx key, 'participant_count', 0
-      ThumbnailOptimization.redis.setnx key+':click', 0
+      Thumbal.redis.hsetnx key, 'participant_count', 0
+      Thumbal.redis.setnx key+':click', 0
 
     end
 
@@ -101,12 +101,12 @@ module Thumbal
     end
 
     def reset
-      ThumbnailOptimization.redis.hmset key, 'participant_count', 0, key+':click', 0
+      Thumbal.redis.hmset key, 'participant_count', 0, key+':click', 0
     end
 
     def delete
-      ThumbnailOptimization.redis.del(key)
-      ThumbnailOptimization.redis.del(key+":click")
+      Thumbal.redis.del(key)
+      Thumbal.redis.del(key+":click")
     end
 
     private

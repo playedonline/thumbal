@@ -1,7 +1,7 @@
 require 'rails/generators/active_record'
 
 module Thumbal
-  class ThumbnailOptimizationGenerator < ActiveRecord::Generators::Base
+  class ThumbalGenerator < ActiveRecord::Generators::Base
     desc "Create a migration to add an optimization table"
 
     def self.source_root

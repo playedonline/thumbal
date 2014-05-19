@@ -2,8 +2,16 @@
     <div class="fl">
       <h2>
         <a id="create" style="text-decoration: none; color: #000000">Create a new thumbnail experiment for </a>
-        <img src="<%= Kernel.const_get(@game_class_name).find(@game_id).send(@thumb_url_method) %>"/>
-        <label><%= Kernel.const_get(@game_class_name).find(@game_id).send(@game_name_method) %></label>
+        <% if @game_class_name.present? %>
+            <% if  @thumb_url_method.present? %>
+                <img src="<%= Kernel.const_get(@game_class_name).find(@game_id).send(@thumb_url_method) %>"/>
+            <% end %>
+            <% if @game_name_method.present? %>
+                <label><%= Kernel.const_get(@game_class_name).find(@game_id).send(@game_name_method) %></label>
+            <% end %>
+        <% end %>
+
+
       </h2>
 
 
@@ -23,8 +31,6 @@
       </form>
     </div>
 
-    <% # jquery upload template # %>
-    <script id="template-upload" type="text/x-tmpl"><div class="upload">{%=o.name%}<div class="progress"><div class="bar" style="width: 0%"></div></div></div></script>
 <% end %>
 
 <div class="fl">
