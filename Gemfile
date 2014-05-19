@@ -1,3 +1,3 @@
 source 'https://rubygems.org'
-# Specify your gem's dependencies in thumbnail_optimization.gemspec
+# Specify your gem's dependencies in thumbal.gemspec
 gemspec
