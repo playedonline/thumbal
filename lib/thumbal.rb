@@ -48,6 +48,38 @@ module Thumbal
   end
 
 
+  def model_name=(name_str)
+    @model_name = name_str
+  end
+
+  def model_name
+    return @model_name if @model_name
+    self.model_name = 'Game'
+    self.model_name
+  end
+
+  def model_thumb_field=(property_name)
+    @model_thumb_field = property_name
+  end
+
+
+  def model_thumb_field
+    return @model_thumb_field if @model_thumb_field
+    self.model_thumb_field = 'thumb'
+    self.model_thumb_field
+  end
+
+  def model_to_s=(to_s_property)
+    @model_to_s = to_s_property
+  end
+
+  def model_to_s
+    return @model_to_s if @model_to_s
+    self.model_to_s = 'name'
+    self.model_to_s
+  end
+
+
   # Call this method to modify defaults in your initializers.
   def configure
     self.configuration ||= Configuration.new

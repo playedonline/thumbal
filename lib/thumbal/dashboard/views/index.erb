@@ -1,16 +1,9 @@
-<% if @game_id.present? %>
+<% if @game.present? %>
     <div class="fl">
       <h2>
         <a id="create" style="text-decoration: none; color: #000000">Create a new thumbnail experiment for </a>
-        <% if @game_class_name.present? %>
-            <% if  @thumb_url_method.present? %>
-                <img src="<%= Kernel.const_get(@game_class_name).find(@game_id).send(@thumb_url_method) %>"/>
-            <% end %>
-            <% if @game_name_method.present? %>
-                <label><%= Kernel.const_get(@game_class_name).find(@game_id).send(@game_name_method) %></label>
-            <% end %>
-        <% end %>
-
+            <img width="100" height="100" src="<%= @game.send(model_thumb_field) %>"/>
+            <label><%= @game.send(model_to_s) %></label>
 
       </h2>
 
@@ -27,7 +20,7 @@
         <input type="number" name="max_participants" id="max_participants" value="30000"/>
         <br/><br/>
         <input type="submit" value="Begin test" />
-        <input type="hidden" value="<%= @game_id %>" name="game_id"/>
+        <input type="hidden" value="<%= @game.id %>" name="game_id"/>
       </form>
     </div>
 
@@ -39,7 +32,7 @@
   </h2>
 
   <% @current_experiments.each do |exp| %>
-      <h3> <%= Kernel.const_get(@game_class_name).find(exp.name).send(@game_name_method) %></h3>
+      <h3> <%= Kernel.const_get(model_name).find(exp.name).send(model_to_s) %></h3>
       <table>
         <tr>
           <th>Thumb</th>
@@ -69,7 +62,7 @@
 
 
   <% @finished_experiments.each do |exp| %>
-      <h3><%= Kernel.const_get(@game_class_name).find(exp.game_id).send(@game_name_method) %></h3>
+      <h3><%= Kernel.const_get(model_name).find(exp.game_id).send(model_to_s) %></h3>
       <table>
         <tr>
           <th>Thumb</th>

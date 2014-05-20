@@ -21,14 +21,21 @@ Or install it yourself as:
 rails g thumbal thumb
 rake db:migrate
 
-To use thumbal's dashboard:
+To use thumbal's dashboard create a thumbal initializer (in config/initializers):
+
+    Thumbal.redis = $redis
+    Thumbal.model_to_s = 'name'
+    Thumbal.model_name = 'Game'
+    Thumbal.model_thumb_field = 'thumb'
+ 
+and add an iframe to your view:
+
+to create an experiment for a model:
 ```html
-<iframe id="optimization_frame" src="/thumbal?game_id=<%= game.present? ? game.id : '' %>&game_class_name=Game&thumb_url_method=thumb_url_small&game_name_method=name"></iframe>
+<iframe id="optimization_frame" src="/thumbal?game_id=<%= game.present? ? game.id : '' %>"></iframe>
 ```
-  * game_id is the id of the object you're testing thumbs for
-  * game_class_name is the name of the object's class
-  * thumb_url_method  (string) is the attr_accessor that gets the object's current/default thumb (optional, for displaying in the dashboard)
-  * game_name_method (string) is the attr_accessor that gets the object's display name (optional, for displaying in the dashboard)
+
+  * game_id is the id of the object you want to create an experiment for (optional)
 
 ## Contributing
 

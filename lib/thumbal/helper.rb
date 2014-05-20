@@ -1,8 +1,13 @@
 module Thumbal
   module Helper
 
+    extend self
+
     # Initialize a new experiment in redis and database
-    def self.init_experiment(game_id, thumbs, max_participants)
+    # @param game_id : the id of the object of the experiment
+    # @param thumbs : an array of thumb urls (strings)
+    # @param max_participants : the experiment will stop after reaching max_paeticipants
+    def self.init_experiment(game_id, thumbs, max_participants=30000)
 
       active_test = ThumbnailExperiment.where(game_id: game_id, is_active: 1)
       exp = Experiment.find(game_id.to_s)
@@ -60,8 +65,8 @@ module Thumbal
     def ab_test_active_thumb_experiments
 
       res = {}
-      active_test_names =  ThumbnailExperiment.uniq.where(is_active: 1).pluck('game_id')
-      active_test_names.names do |id|
+      active_test_names = ThumbnailExperiment.uniq.where(is_active: 1).pluck('game_id')
+      active_test_names.each do |id|
 
         experiment = Thumbal::Experiment.find(id.to_s)
         res[id] = start_experiment( experiment )
@@ -109,7 +114,7 @@ module Thumbal
 
           else
             experiment.set_winner
-            update_db(experiment)
+            update_db(experiment, true)
             ret = experiment.winner.name
           end
         end
@@ -123,7 +128,7 @@ module Thumbal
     # Updates experiment data in the database. Usually called when reaching max_participants.
     # Params:
     # +experiment+:: the experiment to select an alternative from
-    def update_db(experiment)
+    def update_db(experiment, finish=false)
 
       game_id = experiment.name.to_i
       test = ThumbnailExperiment.where(game_id: game_id, is_active: 1)
@@ -134,6 +139,9 @@ module Thumbal
         alternative.save
       end
 
+      if finish
+        test.is_active = 0
+      end
       test.save
 
     end

@@ -17,15 +17,9 @@ module Thumbal
 
       @current_experiments = Experiment.all
       @finished_experiments = ThumbnailExperiment.where(is_active: 0)
-      #
-      # if params.present?
-      #   @game = Game.find(params)
-      # end
-
-      @game_id = params['game_id']
-      @game_class_name = params['game_class_name'].to_s
-      @thumb_url_method = params['thumb_url_method'].to_s
-      @game_name_method = params['game_name_method'].to_s
+      if params['game_id'].present?
+        @game = Kernel.const_get(model_name).find(params['game_id'])
+      end
 
       erb :index
     end
