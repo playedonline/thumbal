@@ -100,6 +100,7 @@ module Thumbal
 
     def choose
       alt = alternatives.sample
+      alt.increment_participation
       alt.name
     end
 

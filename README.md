@@ -21,16 +21,15 @@ Or install it yourself as:
 rails g thumbal thumb
 rake db:migrate
 
-To use thumbal's dashboard create a thumbal initializer (in config/initializers):
+To use thumbal, create a thumbal initializer (in config/initializers):
 
     Thumbal.redis = $redis
     Thumbal.model_to_s = 'name'
     Thumbal.model_name = 'Game'
     Thumbal.model_thumb_field = 'thumb'
  
-and add an iframe to your view:
+to use thumbal's dashboard and add an iframe to your view:
 
-to create an experiment for a model:
 ```html
 <iframe id="optimization_frame" src="/thumbal?game_id=<%= game.present? ? game.id : '' %>"></iframe>
 ```

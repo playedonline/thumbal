@@ -61,15 +61,20 @@ module Thumbal
     end
 
 
+    def get_uuid(context)
+      @cookies = context.send(:cookies)
+      @cookies[user_id_cookie_key]
+    end
+
     # Gets all running thumbs ab tests for user as a hash {<game_id> => <alternative_name>}
-    def ab_test_active_thumb_experiments
+    def ab_test_active_thumb_experiments(context)
 
       res = {}
       active_test_names = ThumbnailExperiment.uniq.where(is_active: 1).pluck('game_id')
       active_test_names.each do |id|
 
         experiment = Thumbal::Experiment.find(id.to_s)
-        res[id] = start_experiment( experiment )
+        res[id] = get_user_alternative( experiment, get_uuid(context) )
 
       end
 
@@ -84,46 +89,44 @@ module Thumbal
       params[experiment_name] if override_present?(experiment_name)
     end
 
-    def ab_user
-      @ab_user ||= Thumbal::CookieAdapter.new(self)
+    def record_thumb_click(context, game_id)
+      exp = Experiment.find(game_id)
+      if exp.winner.nil? #still active
+        alt = get_user_alternative(exp, get_uuid(context))
+        exp.alternatives.each do |a|
+          if a.name == alt
+            a.record_click
+          end
+        end
+      end
     end
-
-    def get_user_abtests_alt_ids
-      # Ignore keys with ':finished'/':attempt', which mark conversions/conversion attempt, we want to only go over keys that mark participating
-      # in a test
-      ab_user.keys.reject { |key| key.ends_with?(':finished', ':attempt') }.map { |key| Alternative.find_alternative_unique_id(key.split(':')[0], ab_user[key]) }.join(',')
-    end
-
 
     protected
 
-    # Gets an alternative for the user- checks if the experiment is still running and if it's a new user. Otherwise get winner/value form cookie.
+    # Gets an alternative for the user- checks if the experiment is still running and if it's a new user. Otherwise get winner/value form redis cache.
     # Params:
     # +experiment+:: the experiment to select an alternative from
-    def start_experiment(experiment)
+    def get_user_alternative(experiment, uuid)
 
       if ! experiment.winner.nil?
         ret = experiment.winner.name
       else
-        if ab_user[experiment.key]
-          ret = ab_user[experiment.key]
+        if redis.hget("#{experiment.name}:users", "#{uuid}")
+          ret = redis.hget("#{experiment.name}:users","#{uuid}")
         else
-
           if experiment.max_participants > experiment.participant_count
             ret = experiment.choose
-
           else
             experiment.set_winner
             update_db(experiment, true)
             ret = experiment.winner.name
           end
         end
-
       end
-      ab_user[experiment.key] = ret
+      redis.hset("#{experiment.name}:users","#{uuid}", ret)
       ret
-
     end
+
 
     # Updates experiment data in the database. Usually called when reaching max_participants.
     # Params:

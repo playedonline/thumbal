@@ -1,6 +1,6 @@
 require 'rubygems'
 require 'paperclip'
-%w[alternative experiment helper version configuration cookie_adapter thumbnail_experiment thumb dashboard].each do |f|
+%w[alternative experiment helper version configuration thumbnail_experiment thumb dashboard].each do |f|
   require "thumbal/#{f}"
 end
 
@@ -79,6 +79,15 @@ module Thumbal
     self.model_to_s
   end
 
+  def user_id_cookie_key=(key)
+    @user_id_cookie_key = key
+  end
+
+  def user_id_cookie_key
+    return @user_id_cookie_key if @user_id_cookie_key
+    self.user_id_cookie_key = 'uuid'
+    self.user_id_cookie_key
+  end
 
   # Call this method to modify defaults in your initializers.
   def configure
