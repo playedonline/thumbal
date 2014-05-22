@@ -40,7 +40,7 @@ module Thumbal
 
 
       #start a new test for the game
-      thumb_exp = ThumbnailExperiment.create(game_id: game_id)  #create the experiment
+      thumb_exp = ThumbnailExperiment.create(game_id: game_id) #create the experiment
 
       #add the images to db
       thumbs.each do |file|
@@ -54,7 +54,7 @@ module Thumbal
       thumb_exp.save
 
       #save to Redis
-      images = thumb_exp.thumbs.map{|t| t.image.to_s}
+      images = thumb_exp.thumbs.map { |t| t.image.to_s }
       exp = Experiment.new(game_id.to_s, images, max_participants)
       exp.save
 
@@ -71,14 +71,16 @@ module Thumbal
     def ab_test_active_thumb_experiments(context)
 
       res = {}
-      active_test_names = ThumbnailExperiment.uniq.where(is_active: 1).pluck('game_id')
-      active_test_names.each do |id|
+      browser = Browser.new(:ua => context.request.env['HTTP_USER_AGENT'])
+      if !browser.bot?
+        active_test_names = ThumbnailExperiment.uniq.where(is_active: 1).pluck('game_id')
+        active_test_names.each do |id|
 
-        experiment = Thumbal::Experiment.find(id.to_s)
-        res[id] = get_user_alternative( experiment, get_uuid(context) )
+          experiment = Thumbal::Experiment.find(id.to_s)
+          res[id] = get_user_alternative(experiment, get_uuid(context))
 
+        end
       end
-
       res
     end
 
@@ -105,11 +107,11 @@ module Thumbal
     # +experiment+:: the experiment to select an alternative from
     def get_user_alternative(experiment, uuid)
 
-      if ! experiment.winner.nil?
+      if !experiment.winner.nil?
         ret = experiment.winner.name
       else
         if redis.hget("#{experiment.name}:users", "#{uuid}")
-          ret = redis.hget("#{experiment.name}:users","#{uuid}")
+          ret = redis.hget("#{experiment.name}:users", "#{uuid}")
         else
           if experiment.max_participants > experiment.participant_count
             ret = experiment.choose
@@ -120,7 +122,7 @@ module Thumbal
           end
         end
       end
-      redis.hset("#{experiment.name}:users","#{uuid}", ret)
+      redis.hset("#{experiment.name}:users", "#{uuid}", ret)
       ret
     end
 
