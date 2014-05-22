@@ -36,6 +36,11 @@ to use thumbal's dashboard and add an iframe to your view:
 
   * game_id is the id of the object you want to create an experiment for (optional)
 
+
+Get all live experiments:
+
+    Thumbal::Helper.ab_test_active_thumb_experiments({a web context- i.e Controller})
+    
 ## Contributing
 
 1. Fork it ( http://github.com/<my-github-username>/thumbal/fork )
