@@ -63,6 +63,9 @@ module Thumbal
         experiment.winner=alt_name
         Thumbal::Helper.update_db(experiment, true)
         experiment.delete
+        begin
+          Thumbal::Helper.call_reset_cache_hook
+        end
       end
 
 

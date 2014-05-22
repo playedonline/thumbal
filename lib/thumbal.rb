@@ -95,4 +95,13 @@ module Thumbal
     yield(configuration)
   end
 
+  def reset_app_thumbs_cache_callback
+    return @reset_app_thumbs_cache if @reset_app_thumbs_cache
+    nil
+  end
+
+  def reset_app_thumbs_cache_callback=(callback)
+    @reset_app_thumbs_cache = callback
+  end
+
 end

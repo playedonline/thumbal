@@ -58,6 +58,7 @@ module Thumbal
       exp = Experiment.new(game_id.to_s, images, max_participants)
       exp.save
 
+      call_reset_cache_hook
     end
 
 
@@ -126,6 +127,10 @@ module Thumbal
 
     end
 
+    def call_reset_cache_hook
+      Thumbal.reset_app_thumbs_cache_callback.call if Thumbal.reset_app_thumbs_cache_callback
+    end
+
 
     protected
 
@@ -145,6 +150,9 @@ module Thumbal
           else
             experiment.set_winner
             update_db(experiment, true)
+            begin
+              call_reset_cache_hook
+            end
             ret = experiment.winner.name
           end
         end
@@ -152,6 +160,7 @@ module Thumbal
       redis.hset("#{experiment.name}:users", "#{uuid}", ret)
       ret
     end
+
 
   end
 end
