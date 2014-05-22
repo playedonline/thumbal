@@ -39,7 +39,7 @@ module Thumbal
 
 
       Thumbal::Helper.init_experiment(params[:game_id], params[:upload], params[:max_participants])
-
+      redirect url('/')
     end
 
   end
