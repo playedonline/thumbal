@@ -47,8 +47,27 @@ module Thumbal
       if params['exp_id'].present?
         exp = ThumbnailExperiment.find(params['exp_id'])
         exp.delete
-        redirect url('/')
+
       end
+
+      redirect url('/')
+    end
+
+    post '/choose_alternative' do
+
+      exp_name = params['exp_name']
+      alt_name = params['alt_name']
+
+      if exp_name.present? and alt_name.present?
+        experiment = Experiment.find(exp_name)
+        experiment.winner=alt_name
+        Thumbal::Helper.update_db(experiment, true)
+        experiment.delete
+      end
+
+
+      redirect url('/')
+
     end
 
   end

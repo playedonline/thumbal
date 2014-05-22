@@ -32,6 +32,7 @@
   </h2>
 
   <% @current_experiments.each do |exp| %>
+
       <h3> <%= Kernel.const_get(model_name).find(exp.name).send(model_to_s) %></h3>
       <table>
         <tr>
@@ -39,6 +40,7 @@
           <th>Impressions</th>
           <th>Clicks</th>
           <th>ctr</th>
+          <th></th>
         </tr>
         <% exp.alternatives.each do |alt| %>
             <tr>
@@ -46,6 +48,7 @@
               <td><%= alt.participant_count %></td>
               <td><%= alt.clicks %></td>
               <td><%= '%f%' % alt.ctr %></td>
+              <td><form action="<%= url("choose_alternative") %>" method="post"><input type="submit" value="choose" name="choose_alternative"/><input type="hidden" name="exp_name" value="<%= exp.name %>"/><input type="hidden" name="alt_name" value="<%= alt.name%>"/></form></td>
             </tr>
         <% end %>
       </table>

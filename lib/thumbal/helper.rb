@@ -100,6 +100,33 @@ module Thumbal
       end
     end
 
+
+
+
+    # Updates experiment data in the database. Usually called when reaching max_participants.
+    # Params:
+    # +experiment+:: the experiment to select an alternative from
+    def update_db(experiment, finish=false)
+
+      game_id = experiment.name.to_i
+      active_tests = ThumbnailExperiment.where(game_id: game_id, is_active: 1)
+
+      active_tests.each do |test|
+        test.thumbs.each do |alternative|
+          alternative.impressions = experiment.get_alternative_participants(alternative.image)
+          alternative.clicks = experiment.get_alternative_clicks(alternative.image)
+          alternative.save
+        end
+
+        if finish
+          test.is_active = 0
+        end
+        test.save
+      end
+
+    end
+
+
     protected
 
     # Gets an alternative for the user- checks if the experiment is still running and if it's a new user. Otherwise get winner/value form redis cache.
@@ -124,30 +151,6 @@ module Thumbal
       end
       redis.hset("#{experiment.name}:users", "#{uuid}", ret)
       ret
-    end
-
-
-    # Updates experiment data in the database. Usually called when reaching max_participants.
-    # Params:
-    # +experiment+:: the experiment to select an alternative from
-    def update_db(experiment, finish=false)
-
-      game_id = experiment.name.to_i
-      active_tests = ThumbnailExperiment.where(game_id: game_id, is_active: 1)
-
-      active_tests.each do |test|
-        test.thumbs.each do |alternative|
-          alternative.impressions = experiment.get_alternative_participants(alternative.image)
-          alternative.clicks = experiment.get_alternative_clicks(alternative.image)
-          alternative.save
-        end
-
-        if finish
-          test.is_active = 0
-        end
-        test.save
-      end
-
     end
 
   end
