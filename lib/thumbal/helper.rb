@@ -61,6 +61,7 @@ module Thumbal
     end
 
 
+    #Gets the user's unique id from the cookie
     def get_uuid(context)
       @cookies = context.send(:cookies)
       @cookies[user_id_cookie_key]
@@ -81,14 +82,10 @@ module Thumbal
       res
     end
 
-    def override_present?(experiment_name)
-      defined?(params) && params[experiment_name]
-    end
-
-    def override_alternative(experiment_name)
-      params[experiment_name] if override_present?(experiment_name)
-    end
-
+    # Records a 'click' event for the user's selected alternative
+    # Params:
+    # +context+:: a web context that responds to :cookies (for example- a Controller (ActionController::Base))
+    # +game_id+:: the id of the model object that was clicked
     def record_thumb_click(context, game_id)
       exp = Experiment.find(game_id)
       if exp.winner.nil? #still active

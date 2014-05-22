@@ -27,6 +27,15 @@ To use thumbal, create a thumbal initializer (in config/initializers):
     Thumbal.model_to_s = 'name'
     Thumbal.model_name = 'Game'
     Thumbal.model_thumb_field = 'thumb'
+    Thumbal.user_id_cookie_key = 'uuid'
+    
+    * redis => the redis server that your app uses
+    * model_to_s => the property used for model presentation (like name / to_s function)
+    * model_name => the name of the model (used to get an instance of the model with:
+         Kernel.const_get(model_name).find({id})
+    * model_thumb_field => the property used for getting/setting the model's thumb (used when setting the winner)
+    * user_id_cookie_key => the string key your app uses to store a unique id for the user in the browser's cookie. NOTE: without this the whole thing just won't work...
+
  
 to use thumbal's dashboard and add an iframe to your view:
 
@@ -40,7 +49,19 @@ to use thumbal's dashboard and add an iframe to your view:
 Get all live experiments:
 
     Thumbal::Helper.ab_test_active_thumb_experiments({a web context- i.e Controller})
+
+the returned value is a hash. the keys are game_id, values are the url of the selected test alternative, for example:
+
+    {93711=>"http://s3.amazonaws.com/mobile_catalog/system/static/thumbs/square/47/original_RackMultipart20140522-76792-1vpr9rj.?1400750291", 93841=>"http://s3.amazonaws.com/mobile_catalog/system/static/thumbs/square/6/original_RackMultipart20140520-70543-19d4llh.?1400593134", 93845=>"http://s3.amazonaws.com/mobile_catalog/system/static/thumbs/square/10/original_RackMultipart20140521-74112-1dxdxec.?1400663415"}
     
+    
+Record click event for alternative:
+
+    Thumbal::Helper.record_thumb_click({web context}, {game_id})
+    
+where web context is something that responds to :cookies (i.e an ActionController::Base to get the user id cookie)
+
+
 ## Contributing
 
 1. Fork it ( http://github.com/<my-github-username>/thumbal/fork )
