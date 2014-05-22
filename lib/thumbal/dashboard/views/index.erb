@@ -63,6 +63,7 @@
 
   <% @finished_experiments.each do |exp| %>
       <h3><%= Kernel.const_get(model_name).find(exp.game_id).send(model_to_s) %></h3>
+      <div style="float: right"><form action="<%= url("delete_test") %>" method="post" ><input type="hidden" name="exp_id" value="<%= exp.id %>"/> <input type="submit" value="Delete"> </form> </div>
       <table>
         <tr>
           <th>Thumb</th>

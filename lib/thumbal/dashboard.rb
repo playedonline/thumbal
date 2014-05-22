@@ -42,5 +42,14 @@ module Thumbal
       redirect url('/')
     end
 
+    post '/delete_test' do
+
+      if params['exp_id'].present?
+        exp = ThumbnailExperiment.find(params['exp_id'])
+        exp.delete
+        redirect url('/')
+      end
+    end
+
   end
 end
