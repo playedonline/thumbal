@@ -15,10 +15,6 @@ module Thumbal
       Thumbal.redis.smembers(:experiments).map { |e| find(e) }
     end
 
-    def self.active_experiments_names
-      Thumbal.redis.smembers(:experiments)
-    end
-
     def self.find(name)
       if Thumbal.redis.smembers(:experiments).include? name
         obj = self.new(name)
@@ -105,25 +101,6 @@ module Thumbal
       alt.name
     end
 
-    def event_types
-      event_names = []
-      alternatives = @alternatives.each do |alternative|
-        event_names = event_names + alternative.events_hash.keys
-      end
-      event_names.uniq
-    end
-
-    def event_totals
-      totals_hash = {}
-      @alternatives.each do |alternative|
-        alternative.events_hash.each do |event_name, amount|
-          totals_hash[event_name] = totals_hash[event_name].present? ? (totals_hash[event_name].to_i+amount.to_i) : amount.to_i
-        end
-
-      end
-      totals_hash
-    end
-
 
     def winner
       if w = Thumbal.redis.hget(:experiment_winner, name)
@@ -159,10 +136,6 @@ module Thumbal
 
     def participant_count
       alternatives.inject(0) { |sum, a| sum + a.participant_count }
-    end
-
-    def control
-      alternatives.first
     end
 
     def reset_winner

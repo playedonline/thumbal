@@ -68,10 +68,6 @@ module Thumbal
       Thumbal.redis.hincrby key, 'participant_count', 1
     end
 
-    def control?
-      experiment.control.name == self.name
-    end
-
     def experiment
       Thumbal::Experiment.find(experiment_name)
     end
