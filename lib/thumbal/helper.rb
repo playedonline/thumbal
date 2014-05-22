@@ -134,18 +134,20 @@ module Thumbal
     def update_db(experiment, finish=false)
 
       game_id = experiment.name.to_i
-      test = ThumbnailExperiment.where(game_id: game_id, is_active: 1)
+      active_tests = ThumbnailExperiment.where(game_id: game_id, is_active: 1)
 
-      test.thumbs.each do |alternative|
-        alternative.impressions = experiment.get_alternative_participants(alternative.image)
-        alternative.clicks = experiment.get_alternative_clicks(alternative.image)
-        alternative.save
-      end
+      active_tests.each do |test|
+        test.thumbs.each do |alternative|
+          alternative.impressions = experiment.get_alternative_participants(alternative.image)
+          alternative.clicks = experiment.get_alternative_clicks(alternative.image)
+          alternative.save
+        end
 
-      if finish
-        test.is_active = 0
+        if finish
+          test.is_active = 0
+        end
+        test.save
       end
-      test.save
 
     end
 

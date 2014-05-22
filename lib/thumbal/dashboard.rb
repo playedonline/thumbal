@@ -15,7 +15,13 @@ module Thumbal
     get '/' do
 
 
-      @current_experiments = Experiment.all
+      cached_experiments = Experiment.all
+      @current_experiments = []
+      cached_experiments.each do |x|
+        if x.winner.nil?
+          @current_experiments << x
+        end
+      end
       @finished_experiments = ThumbnailExperiment.where(is_active: 0)
       if params['game_id'].present?
         @game = Kernel.const_get(model_name).find(params['game_id'])

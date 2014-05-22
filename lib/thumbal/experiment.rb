@@ -1,3 +1,4 @@
+require 'open-uri'
 module Thumbal
   class Experiment
     attr_accessor :name
@@ -138,8 +139,22 @@ module Thumbal
 
     def set_winner
 
-      winner = (alternatives.max_by {|a| a.ctr}).name
-      winner
+      self.winner = (alternatives.max_by { |a| a.ctr }).name
+
+      begin
+        game = Kernel.const_get(model_name).find(name)
+        if game.present?
+          game.send("#{model_thumb_field}=", open(self.winner.name))
+          # file.close
+          game.save!
+        end
+
+      rescue Exception => ex
+        puts "Thumbal: ERROR when trying to set abtest winner for #{name}: " + ex.message
+      end
+
+
+      self.winner
     end
 
     def participant_count
@@ -242,6 +257,7 @@ module Thumbal
     def delete
       alternatives.each(&:delete)
       reset_winner
+      redis.del("#{self.name}:users")
       Thumbal.redis.srem(:experiments, name)
       Thumbal.redis.del(name)
       increment_version
