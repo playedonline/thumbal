@@ -135,6 +135,18 @@ module Thumbal
     end
 
 
+    def get_alternative_for_user_by_model_id(model_id, context)
+      uuid = get_uuid(context)
+      return nil if uuid.nil?
+
+      exp = Experiment.find(model_id.to_s)
+      return nil if exp.nil?
+
+      get_user_alternative(exp, uuid)
+
+    end
+
+
     protected
 
     # Gets an alternative for the user- checks if the experiment is still running and if it's a new user. Otherwise get winner/value form redis cache.
