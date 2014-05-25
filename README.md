@@ -18,8 +18,8 @@ Or install it yourself as:
 
 ## Usage
 
-rails g thumbal thumb
-rake db:migrate
+    rails g thumbal thumb
+    rake db:migrate
 
 To use thumbal, create a thumbal initializer (in config/initializers):
 
