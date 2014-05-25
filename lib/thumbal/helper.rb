@@ -91,7 +91,7 @@ module Thumbal
     # +game_id+:: the id of the model object that was clicked
     def record_thumb_click(context, game_id)
       exp = Experiment.find(game_id)
-      if exp.winner.nil? #still active
+      if exp.present? and exp.winner.nil? #still active
         alt = get_user_alternative(exp, get_uuid(context))
         exp.alternatives.each do |a|
           if a.name == alt
