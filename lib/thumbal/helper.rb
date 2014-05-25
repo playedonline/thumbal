@@ -146,6 +146,13 @@ module Thumbal
 
     end
 
+    def get_experiment_version(model_id)
+      experiment = Experiment.find(model_id.to_s)
+      return nil if experiment.nil?
+
+      return experiment.version
+    end
+
 
     protected
 
