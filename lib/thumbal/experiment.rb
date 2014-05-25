@@ -117,11 +117,17 @@ module Thumbal
     def set_winner
 
       self.winner = (alternatives.max_by { |a| a.ctr }).name
+      set_winning_thumb(self.winner.name)
 
+      self.winner
+    end
+
+
+    def set_winning_thumb(image_url)
       begin
         game = Kernel.const_get(model_name).find(name)
         if game.present?
-          game.send("#{model_thumb_field}=", open(self.winner.name))
+          game.send("#{model_thumb_field}=", open(image_url))
           # file.close
           game.save!
         end
@@ -130,9 +136,8 @@ module Thumbal
         puts "Thumbal: ERROR when trying to set abtest winner for #{name}: " + ex.message
       end
 
-
-      self.winner
     end
+
 
     def participant_count
       alternatives.inject(0) { |sum, a| sum + a.participant_count }

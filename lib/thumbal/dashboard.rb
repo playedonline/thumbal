@@ -61,6 +61,7 @@ module Thumbal
       if exp_name.present? and alt_name.present?
         experiment = Experiment.find(exp_name)
         experiment.winner=alt_name
+        experiment.set_winning_thumb(alt_name)
         Thumbal::Helper.update_db(experiment, true)
         experiment.delete
         begin

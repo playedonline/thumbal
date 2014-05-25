@@ -6,7 +6,7 @@ A gem for creating thumbnail ab tests to optimize your thumbnails
 
 Add this line to your application's Gemfile:
 
-    gem 'thumbal'
+    gem 'thumbal', :git => 'git@github.com:playedonline/thumbal.git'
 
 And then execute:
 

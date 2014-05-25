@@ -54,7 +54,7 @@ module Thumbal
       thumb_exp.save
 
       #save to Redis
-      images = thumb_exp.thumbs.map { |t| t.image.to_s }
+      images = thumb_exp.thumbs.map { |t| t.image(:thumb).to_s }
       exp = Experiment.new(game_id.to_s, images, max_participants)
       exp.save
 
@@ -159,6 +159,7 @@ module Thumbal
       else
         if redis.hget("#{experiment.name}:users", "#{uuid}")
           ret = redis.hget("#{experiment.name}:users", "#{uuid}")
+          experiment[ret].increment_participation
         else
           if experiment.max_participants > experiment.participant_count
             ret = experiment.choose
