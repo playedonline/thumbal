@@ -114,8 +114,8 @@ module Thumbal
 
       active_tests.each do |test|
         test.thumbs.each do |alternative|
-          alternative.impressions = experiment.get_alternative_participants(alternative.image)
-          alternative.clicks = experiment.get_alternative_clicks(alternative.image)
+          alternative.impressions = experiment.get_alternative_participants(alternative.image.to_s)
+          alternative.clicks = experiment.get_alternative_clicks(alternative.image.to_s)
           alternative.save
         end
 

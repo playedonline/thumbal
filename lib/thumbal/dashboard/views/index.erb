@@ -42,8 +42,8 @@
           <th>ctr</th>
           <th></th>
         </tr>
-        <% exp.alternatives.each do |alt| %>
-            <tr>
+        <% exp.get_sorted_alternatives.each_with_index do |alt, i| %>
+            <tr <% if i == 0 %> style="background-color: lemonchiffon" <% end %>>
               <td><img width="50" height="50" src="<%= alt.name %>"/></td>
               <td><%= alt.participant_count %></td>
               <td><%= alt.clicks %></td>
@@ -74,8 +74,8 @@
           <th>Clicks</th>
           <th>ctr</th>
         </tr>
-        <% exp.thumbs.each do |alt| %>
-            <tr>
+        <% exp.get_sorted_alternatives.each_with_index do |alt, i| %>
+            <tr <% if i == 0 %> style="background-color: lemonchiffon" <% end %> >
               <td><img width="50" height="50" src="<%= alt.image %>"/></td>
               <td><%= alt.impressions %></td>
               <td><%= alt.clicks %></td>

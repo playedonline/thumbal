@@ -8,8 +8,5 @@ class Thumb < ActiveRecord::Base
   has_attached_file :image, :styles => { :medium => "300x300>", :thumb => "100x100>" }, :default_url => "/images/:style/missing.png", :path => "/system/static/thumbs/abtest/:id/:style_:basename.:extension"
   validates_attachment_content_type :image, :content_type => /\Aimage\/.*\Z/
 
-  def self.do_something
-    puts 'gg'
-  end
 
 end

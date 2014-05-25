@@ -248,6 +248,7 @@ module Thumbal
           return alt.participant_count
         end
       end
+      0
     end
 
 
@@ -257,6 +258,12 @@ module Thumbal
           return alt.clicks
         end
       end
+      0
+    end
+
+    def get_sorted_alternatives
+      return [] if alternatives.nil?
+      alternatives.sort_by {|alt| get_alternative_participants(alt.name) != 0 ? get_alternative_clicks(alt.name) / get_alternative_participants(alt.name) : 0}.reverse
     end
 
     protected
