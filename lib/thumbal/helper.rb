@@ -78,7 +78,10 @@ module Thumbal
         active_test_names.each do |id|
 
           experiment = Thumbal::Experiment.find(id.to_s)
-          res[id] = get_user_alternative(experiment, get_uuid(context))
+          if experiment.present?
+            res[id] = get_user_alternative(experiment, get_uuid(context))
+          end
+
 
         end
       end
