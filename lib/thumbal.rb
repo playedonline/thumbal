@@ -10,14 +10,6 @@ module Thumbal
 
   extend self
 
-  def get_thumb(game_id)
-    experiment = redis.get('%i_optimization' % game_id)
-    if experiment.present?
-      experiment = JSON.parse(experiment)
-      experiment.sample
-    end
-  end
-
   def redis=(server)
     @redis = Redis::Namespace.new(:thumbal, :redis => server)
   end
@@ -26,9 +18,7 @@ module Thumbal
 # Returns the current Redis connection. If none has been created, will
 # create a new one.
   def redis
-    return @redis if @redis
-    self.redis = 'localhost:6379'
-    self.redis
+    return @redis
   end
 
 

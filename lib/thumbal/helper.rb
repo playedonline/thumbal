@@ -164,8 +164,8 @@ module Thumbal
       if !experiment.winner.nil?
         ret = experiment.winner.name
       else
-        if redis.hget("#{experiment.name}:users", "#{uuid}")
-          ret = redis.hget("#{experiment.name}:users", "#{uuid}")
+        if Thumbal.redis.hget("#{experiment.name}:users", "#{uuid}")
+          ret = Thumbal.redis.hget("#{experiment.name}:users", "#{uuid}")
           experiment[ret].increment_participation
         else
           if experiment.max_participants > experiment.participant_count
@@ -180,7 +180,7 @@ module Thumbal
           end
         end
       end
-      redis.hset("#{experiment.name}:users", "#{uuid}", ret)
+      Thumbal.redis.hset("#{experiment.name}:users", "#{uuid}", ret)
       ret
     end
 
