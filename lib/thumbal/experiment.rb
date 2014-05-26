@@ -235,7 +235,7 @@ module Thumbal
     def delete
       alternatives.each(&:delete)
       reset_winner
-      redis.del("#{self.name}:users")
+      Thumbal.redis.del("#{self.name}:users")
       Thumbal.redis.srem(:experiments, name)
       Thumbal.redis.del(name)
       increment_version
