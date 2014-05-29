@@ -276,7 +276,7 @@ module Thumbal
     end
 
     def is_maxed
-      ans = false
+      ans = true
       alternatives.each do |alt|
         ans = (ans and is_alternative_maxed(alt))
       end
