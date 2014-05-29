@@ -168,22 +168,21 @@ module Thumbal
           ret = Thumbal.redis.hget("#{experiment.name}:users", "#{uuid}")
           experiment[ret].increment_participation
         else
-          if experiment.max_participants > experiment.participant_count
-            ret = experiment.choose
-          else
+          if experiment.is_maxed
             experiment.set_winner
             update_db(experiment, true)
             begin
               call_reset_cache_hook
             end
             ret = experiment.winner.name
+          else
+            ret = experiment.choose
           end
         end
       end
       Thumbal.redis.hset("#{experiment.name}:users", "#{uuid}", ret)
       ret
     end
-
 
   end
 end

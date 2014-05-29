@@ -96,7 +96,10 @@ module Thumbal
     end
 
     def choose
-      alt = alternatives.sample
+
+      available_alternatives = get_available_alternatives
+
+      alt = available_alternatives.sample
       alt.increment_participation
       alt.name
     end
@@ -271,6 +274,14 @@ module Thumbal
       alternatives.sort_by {|alt| alt.ctr}.reverse
     end
 
+    def is_maxed
+      ans = false
+      alternatives.each do |alt|
+        ans = ans and is_alternative_maxed(alt)
+      end
+      ans
+    end
+
     protected
 
     def experiment_config_key
@@ -281,6 +292,22 @@ module Thumbal
     def load_alternatives_from_redis
       Thumbal.redis.lrange(@name, 0, -1)
 
+    end
+
+    def is_alternative_maxed(alternative)
+      alternative.participant_count >= max_participants
+    end
+
+    #the alternatives that haven't reached max participants yet
+    def get_available_alternatives
+
+      ans = []
+      alternatives.each do |alt|
+        unless is_alternative_maxed(alt)
+          ans << alt
+        end
+      end
+      ans
     end
 
   end
