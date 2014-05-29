@@ -268,7 +268,7 @@ module Thumbal
 
     def get_sorted_alternatives
       return [] if alternatives.nil?
-      alternatives.sort_by {|alt| get_alternative_participants(alt.name) != 0 ? get_alternative_clicks(alt.name) / get_alternative_participants(alt.name) : 0}.reverse
+      alternatives.sort_by {|alt| alt.ctr}.reverse
     end
 
     protected
