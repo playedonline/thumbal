@@ -170,13 +170,13 @@ module Thumbal
             experiment[ret].increment_participation
           end
 
+          if experiment.is_maxed
+            finish_experiment(experiment)
+          end
+
         else
           if experiment.is_maxed
-            experiment.set_winner
-            update_db(experiment, true)
-            begin
-              call_reset_cache_hook
-            end
+            finish_experiment(experiment)
             ret = experiment.winner.name
           else
             ret = experiment.choose(increase_impression)
@@ -187,5 +187,12 @@ module Thumbal
       ret
     end
 
+    def finish_experiment(experiment)
+      experiment.set_winner
+      update_db(experiment, true)
+      begin
+        call_reset_cache_hook
+      end
+    end
   end
 end
