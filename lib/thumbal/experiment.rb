@@ -95,12 +95,13 @@ module Thumbal
       end
     end
 
-    def choose
+    def choose(increase_impression=true)
 
       available_alternatives = get_available_alternatives
-
       alt = available_alternatives.sample
-      alt.increment_participation
+      if increase_impression
+        alt.increment_participation
+      end
       alt.name
     end
 
@@ -277,7 +278,7 @@ module Thumbal
     def is_maxed
       ans = false
       alternatives.each do |alt|
-        ans = ans and is_alternative_maxed(alt)
+        ans = (ans and is_alternative_maxed(alt))
       end
       ans
     end

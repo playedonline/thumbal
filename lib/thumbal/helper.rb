@@ -95,7 +95,7 @@ module Thumbal
     def record_thumb_click(context, game_id)
       exp = Experiment.find(game_id)
       if exp.present? and exp.winner.nil? #still active
-        alt = get_user_alternative(exp, get_uuid(context))
+        alt = get_user_alternative(exp, get_uuid(context), false)
         exp.alternatives.each do |a|
           if a.name == alt
             a.record_click
@@ -142,7 +142,7 @@ module Thumbal
       exp = Experiment.find(model_id.to_s)
       return nil if exp.nil?
 
-      get_user_alternative(exp, uuid)
+      get_user_alternative(exp, uuid, false)
 
     end
 
@@ -159,14 +159,17 @@ module Thumbal
     # Gets an alternative for the user- checks if the experiment is still running and if it's a new user. Otherwise get winner/value form redis cache.
     # Params:
     # +experiment+:: the experiment to select an alternative from
-    def get_user_alternative(experiment, uuid)
+    def get_user_alternative(experiment, uuid, increase_impression=true)
 
       if !experiment.winner.nil?
         ret = experiment.winner.name
       else
         if Thumbal.redis.hget("#{experiment.name}:users", "#{uuid}")
           ret = Thumbal.redis.hget("#{experiment.name}:users", "#{uuid}")
-          experiment[ret].increment_participation
+          if increase_impression
+            experiment[ret].increment_participation
+          end
+
         else
           if experiment.is_maxed
             experiment.set_winner
@@ -176,7 +179,7 @@ module Thumbal
             end
             ret = experiment.winner.name
           else
-            ret = experiment.choose
+            ret = experiment.choose(increase_impression)
           end
         end
       end
