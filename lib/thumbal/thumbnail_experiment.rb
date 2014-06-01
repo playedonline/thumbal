@@ -6,6 +6,6 @@ class ThumbnailExperiment < ActiveRecord::Base
   attr_accessible :thumbs, :is_active, :game_id
 
   def get_sorted_alternatives
-    thumbs.sort_by { |alt| (alt.clicks.present? and alt.impressions.present? and alt.impressions != 0) ? alt.clicks/alt.impressions : 0 }.reverse
+    thumbs.sort_by { |alt| (alt.clicks.present? and alt.impressions.present? and alt.impressions != 0) ? alt.clicks.to_f/alt.impressions : 0 }.reverse
   end
 end
