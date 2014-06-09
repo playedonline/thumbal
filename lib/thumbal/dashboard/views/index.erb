@@ -32,7 +32,7 @@
 
   <% @current_experiments.each do |exp| %>
 
-      <h3> <%= Kernel.const_get(model_name).find(exp.name).send(model_to_s) %></h3>
+      <h3><% if model_thumb_field.present? %> <img src="<%= Kernel.const_get(model_name).find(exp.name).send(model_thumb_field) %>" width="50" height="50" />&nbsp;<% end %>  <%= Kernel.const_get(model_name).find(exp.name).send(model_to_s) %></h3>
       <table>
         <tr>
           <th>Thumb</th>
