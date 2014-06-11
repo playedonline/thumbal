@@ -33,7 +33,9 @@
 
   <% @current_experiments.each do |exp| %>
 
-      <h3><% if model_thumb_field.present? %> <img src="<%= Kernel.const_get(model_name).find(exp.name).send(model_thumb_field) %>" width="50" height="50" />&nbsp;<% end %>  <%= Kernel.const_get(model_name).find(exp.name).send(model_to_s) %></h3>
+      <h3><% if model_thumb_field.present? %>
+            <img src="<%= Kernel.const_get(model_name).find(exp.name).send(model_thumb_field) %>" width="50" height="50" />&nbsp;
+        <% end %>  <%= Kernel.const_get(model_name).find(exp.name).send(model_to_s) %>&nbsp; <label style="font-weight: normal; font-size: 12px">[<%= exp.max_participants.to_s %> / Alternative]</label> </h3>
       <table>
         <tr>
           <th>Thumb</th>
