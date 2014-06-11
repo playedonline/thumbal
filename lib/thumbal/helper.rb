@@ -54,7 +54,9 @@ module Thumbal
       if include_current and model_thumb_field.present?
         current_thumb = Kernel.const_get(model_name).find(game_id).send(model_thumb_field)
         if current_thumb.present?
-          experiment_thumb = Thumb.create(image: current_thumb)
+
+          experiment_thumb = Thumb.create(:image => open(URI.parse(current_thumb)) )
+          # experiment_thumb = Thumb.create(image: current_thumb)
           experiment_thumb.save
           thumb_exp.thumbs << experiment_thumb
         end
