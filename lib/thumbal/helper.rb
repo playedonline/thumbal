@@ -7,7 +7,7 @@ module Thumbal
     # @param game_id : the id of the object of the experiment
     # @param thumbs : an array of thumb urls (strings)
     # @param max_participants : the experiment will stop after reaching max_paeticipants
-    def self.init_experiment(game_id, thumbs, max_participants=30000)
+    def self.init_experiment(game_id, thumbs, max_participants=30000, include_current=false)
 
       active_test = ThumbnailExperiment.where(game_id: game_id, is_active: 1)
       exp = Experiment.find(game_id.to_s)
@@ -49,6 +49,15 @@ module Thumbal
 
         #link thumbs to experiment
         thumb_exp.thumbs << thumb
+      end
+
+      if include_current and model_thumb_field.present?
+        current_thumb = Kernel.const_get(model_name).find(game_id).send(model_thumb_field)
+        if current_thumb.present?
+          experiment_thumb = Thumb.create(image: current_thumb)
+          experiment_thumb.save
+          thumb_exp.thumbs << experiment_thumb
+        end
       end
 
       thumb_exp.save
