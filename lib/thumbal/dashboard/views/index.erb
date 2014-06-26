@@ -98,7 +98,7 @@
               <% if alt.impressions == 0 %>
                   <td>0</td>
               <% else %>
-                  <% if alt.positive_clicks != 0 or alt.negative_clicks != 0 %>
+                  <% if (alt.positive_clicks.present? and alt.positive_clicks != 0) or (alt.negative_clicks.present? and alt.negative_clicks != 0) %>
                       <td><%= ((alt.positive_clicks + alt.negative_clicks) / alt.impressions.to_f * 100).to_s + '%' %></td>
                   <% else %>
                       <td><%= (alt.clicks / alt.impressions.to_f * 100).to_s + '%' %></td>
