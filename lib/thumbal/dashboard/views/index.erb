@@ -92,7 +92,7 @@
               <td><%= alt.clicks %></td>
               <td <% if alt.positive_clicks > 0 %> style="color: limegreen; font-weight: bold" <% end %> > <%= alt.positive_clicks %> </td>
               <td <% if alt.negative_clicks < 0 %> style="color: red; font-weight: bold" <% end %> > <%= alt.negative_clicks %> </td>
-              <td <% if (alt.negative_clicks + alt.positive_clicks) < 0 %> style="color: red; font-weight: bold" <% else %> style="color: limegreen; font-weight: bold" <% end %> > <%= alt.positive_clicks + alt.negative_clicks %></td>
+              <td <% if (alt.negative_clicks + alt.positive_clicks) < 0 %> style="color: red; font-weight: bold" <% elsif  (alt.negative_clicks + alt.positive_clicks) > 0 %> style="color: limegreen; font-weight: bold" <% end %> > <%= alt.positive_clicks + alt.negative_clicks %></td>
               <% if alt.impressions == 0 %>
                   <td>0</td>
               <% else %>
