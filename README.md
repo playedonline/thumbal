@@ -29,6 +29,7 @@ To use thumbal, create a thumbal initializer (in config/initializers):
     Thumbal.model_thumb_field = 'thumb'
     Thumbal.user_id_cookie_key = 'uuid'
     Thumbal.reset_app_thumbs_cache_callback = Proc.new { <some method>}
+    Thumbal.calc_score_by_play_time = true
     
     * redis => the redis server that your app uses
     * model_to_s => the property used for model presentation (like name / to_s function)
@@ -37,6 +38,7 @@ To use thumbal, create a thumbal initializer (in config/initializers):
     * model_thumb_field => the property used for getting/setting the model's thumb (used when setting the winner)
     * user_id_cookie_key => the string key your app uses to store a unique id for the user in the browser's cookie. NOTE: without this the whole thing just won't work...
     * reset_app_thumbs_cache_callback => a Proc that you want to call in order to clear your web page cache after starting a new abtest / choosing a winner
+    * calc_score_by_play_time = true => if true: (score -2 for any play_time < 20 sec, score +1 for play_time>=20 sec) / impressions. if false: total clicks / impressions
 
  
 to use thumbal's dashboard and add an iframe to your view:
