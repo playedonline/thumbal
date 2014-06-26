@@ -78,4 +78,12 @@ module Thumbal
     @reset_app_thumbs_cache = callback
   end
 
+  def calc_score_by_play_time
+    return @calc_score_by_play_time if @calc_score_by_play_time
+    nil
+  end
+
+  def calc_score_by_play_time=(value)
+    @calc_score_by_play_time = value
+  end
 end

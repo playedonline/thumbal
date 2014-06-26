@@ -92,8 +92,11 @@ module Thumbal
 
       return 0 if participant_count.to_f == 0
 
-      # clicks = Thumbal.redis.get(key+":click").to_f
-      clicks = (negative_clicks + positive_clicks).to_f
+      clicks = Thumbal.redis.get(key+":click").to_f
+      if calc_score_by_play_time
+        clicks = (negative_clicks + positive_clicks).to_f
+      end
+
       impressions = participant_count.to_f
 
       clicks/impressions
