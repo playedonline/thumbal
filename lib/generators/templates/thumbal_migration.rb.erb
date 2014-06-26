@@ -14,6 +14,8 @@ class CreateThumbnailExperiments < ActiveRecord::Migration
             t.string :image
             t.integer :impressions
             t.integer :clicks
+            t.integer :positive_clicks
+            t.integer :negative_clicks
         end
 
     end

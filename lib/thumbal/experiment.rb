@@ -270,6 +270,24 @@ module Thumbal
       0
     end
 
+    def get_alternative_positive_clicks(alt_name)
+      alternatives.each do |alt|
+        if alt.name == alt_name
+          return alt.positive_clicks
+        end
+      end
+      0
+    end
+
+    def get_alternative_negative_clicks(alt_name)
+      alternatives.each do |alt|
+        if alt.name == alt_name
+          return alt.negative_clicks
+        end
+      end
+      0
+    end
+
     def get_sorted_alternatives
       return [] if alternatives.nil?
       alternatives.sort_by {|alt| alt.ctr}.reverse
