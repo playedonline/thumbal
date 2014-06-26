@@ -86,22 +86,20 @@
           <th>ctr</th>
         </tr>
         <% exp.get_sorted_alternatives.each_with_index do |alt, i| %>
-            <tr
-            <% if i == 0 %> style="background-color: lemonchiffon"
-            <% end %> >
+            <tr <% if i == 0 %> style="background-color: lemonchiffon" <% end %> >
               <td><img width="50" height="50" src="<%= alt.image %>"/></td>
               <td><%= alt.impressions %></td>
               <td><%= alt.clicks %></td>
               <td <% if alt.positive_clicks > 0 %> style="color: limegreen; font-weight: bold" <% end %> > <%= alt.positive_clicks %> </td>
-              <td <% if alt.negative_clicks < 0 %> style="color: red; font-weight: bold" <% end %>><%= alt.negative_clicks %> </td>
-              <td <% if alt.negative_clicks < 0 %> style="color: red; font-weight: bold" <% else %> style="color: limegreen; font-weight: bold" <% end %> > <%= alt.positive_clicks + alt.negative_clicks %></td>
+              <td <% if alt.negative_clicks < 0 %> style="color: red; font-weight: bold" <% end %> > <%= alt.negative_clicks %> </td>
+              <td <% if (alt.negative_clicks + alt.positive_clicks) < 0 %> style="color: red; font-weight: bold" <% else %> style="color: limegreen; font-weight: bold" <% end %> > <%= alt.positive_clicks + alt.negative_clicks %></td>
               <% if alt.impressions == 0 %>
                   <td>0</td>
               <% else %>
-                  <% if (alt.positive_clicks.present? and alt.positive_clicks != 0) or (alt.negative_clicks.present? and alt.negative_clicks != 0) %>
-                      <td><%= ((alt.positive_clicks + alt.negative_clicks) / alt.impressions.to_f * 100).to_s + '%' %></td>
+                  <% if alt.positive_clicks != 0 or alt.negative_clicks != 0 %>
+                      <td><%= ((alt.positive_clicks.to_f + alt.negative_clicks.to_f) / alt.impressions.to_f * 100).to_s + '%' %></td>
                   <% else %>
-                      <td><%= (alt.clicks / alt.impressions.to_f * 100).to_s + '%' %></td>
+                      <td><%= (alt.clicks.to_f / alt.impressions.to_f * 100).to_s + '%' %></td>
                   <% end %>
               <% end %>
             </tr>
