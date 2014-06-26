@@ -40,7 +40,9 @@
         <tr>
           <th>Thumb</th>
           <th>Impressions</th>
-          <th>Clicks</th>
+          <th>Good Clicks Score</th>
+          <th>Bad Clicks Score</th>
+          <th>Total Clicks</th>
           <th>ctr</th>
           <th></th>
         </tr>
@@ -48,6 +50,8 @@
             <tr <% if i == 0 %> style="background-color: lemonchiffon" <% end %>>
               <td><img width="50" height="50" src="<%= alt.name %>"/></td>
               <td><%= alt.participant_count %></td>
+              <td><%= alt.positive_clicks %> </td>
+              <td><%= alt.negative_clicks %> </td>
               <td><%= alt.clicks %></td>
               <td><%= '%f%' % (alt.ctr*100) %></td>
               <td><form action="<%= url("choose_alternative") %>" method="post"><input type="submit" value="choose" name="choose_alternative"/><input type="hidden" name="exp_name" value="<%= exp.name %>"/><input type="hidden" name="alt_name" value="<%= alt.name%>"/></form></td>

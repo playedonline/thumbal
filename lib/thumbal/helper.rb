@@ -117,6 +117,30 @@ module Thumbal
 
 
 
+    # Records a 'positive_click'/'negative_click event for the user's selected alternative, depending on play_time in seconds
+    # Params:
+    # +context+:: a web context that responds to :cookies (for example- a Controller (ActionController::Base))
+    # +game_id+:: the id of the model object that was clicked
+    # +game_play_time+:: the actual play time of the game that was clicked
+    # +critical_play_time+:: the number of seconds that determine if the click was good or bad
+    def record_play_time_click_result(context, game_id, game_play_time, critical_play_time=20)
+
+      exp = Experiment.find(game_id)
+      if exp.present? and exp.winner.nil? #still active
+        alt = get_user_alternative(exp, get_uuid(context), false)
+        exp.alternatives.each do |a|
+          if a.name == alt
+            if game_play_time >= critical_play_time
+              a.record_positive_click
+            else
+              a.record_negative_click
+            end
+          end
+        end
+      end
+
+    end
+
 
     # Updates experiment data in the database. Usually called when reaching max_participants.
     # Params:

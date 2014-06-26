@@ -60,6 +60,14 @@ module Thumbal
       Thumbal.redis.incrby(key+":click", 1)
     end
 
+    def record_negative_click
+      Thumbal.redis.incrby(key+":negative_click", -2)
+    end
+
+    def record_positive_click
+      Thumbal.redis.incrby(key+":positive_click", 1)
+    end
+
     def clicks
       Thumbal.redis.get(key+":click").to_i
     end
@@ -72,12 +80,20 @@ module Thumbal
       Thumbal::Experiment.find(experiment_name)
     end
 
+    def negative_clicks
+      Thumbal.redis.get(key+":negative_click").to_i
+    end
+
+    def positive_clicks
+      Thumbal.redis.get(key+":positive_click").to_i
+    end
 
     def ctr
 
       return 0 if participant_count.to_f == 0
 
-      clicks = Thumbal.redis.get(key+":click").to_f
+      # clicks = Thumbal.redis.get(key+":click").to_f
+      clicks = (negative_clicks + positive_clicks).to_f
       impressions = participant_count.to_f
 
       clicks/impressions
