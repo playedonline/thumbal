@@ -7,9 +7,11 @@ class ThumbnailExperiment < ActiveRecord::Base
 
   def get_sorted_alternatives
     calc_by_total_clicks = true
-    thumbs.each do |t|
-      if t.positive_clicks != 0 or t.negative_clicks != 0
-        calc_by_total_clicks = false
+    if Thumbal.calc_score_by_play_time
+      thumbs.each do |t|
+        if t.positive_clicks != 0 or t.negative_clicks != 0
+          calc_by_total_clicks = false
+        end
       end
     end
 
