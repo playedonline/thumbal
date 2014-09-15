@@ -20,10 +20,10 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'redis',           '>= 2.1'
   spec.add_dependency 'redis-namespace', '>= 1.1.0'
-  spec.add_dependency 'paperclip',       '~> 3.4.2'
+  spec.add_dependency 'paperclip',       '>= 3.4.2'
   spec.add_dependency 'sinatra',         '>= 1.2.6'
   spec.add_dependency 'browser'
 
-  spec.add_development_dependency "bundler", "~> 1.5"
+  spec.add_development_dependency "bundler", ">= 1.5"
   spec.add_development_dependency "rake"
 end
