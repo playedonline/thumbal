@@ -79,6 +79,10 @@ module Thumbal
       @cookies[user_id_cookie_key]
     end
 
+    def get_active_thumb_experiments_names(context)
+      ThumbnailExperiment.uniq.where(is_active: 1).pluck('game_id')
+    end
+
     # Gets all running thumbs ab tests for user as a hash {<game_id> => <alternative_name>}
     def ab_test_active_thumb_experiments(context)
 
