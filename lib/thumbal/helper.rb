@@ -104,7 +104,7 @@ module Thumbal
     end
 
 
-    def enter_user_to_experiment(experiment_name)
+    def enter_user_to_experiment(context, experiment_name)
       res = {}
       browser = Browser.new(:ua => context.request.env['HTTP_USER_AGENT'])
       if !browser.bot?
