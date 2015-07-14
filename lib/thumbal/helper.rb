@@ -103,6 +103,25 @@ module Thumbal
       res
     end
 
+
+    def enter_user_to_experiment(experiment_name)
+      res = {}
+      browser = Browser.new(:ua => context.request.env['HTTP_USER_AGENT'])
+      if !browser.bot?
+        active_tests_for_name = ThumbnailExperiment.where({game_id: experiment_name, is_active: 1})
+        if active_tests_for_name.present?
+          experiment = Thumbal::Experiment.find(experiment_name.to_s)
+          if experiment.present?
+            res[experiment_name.to_s] = get_user_alternative(experiment, get_uuid(context))
+          end
+
+        end
+
+      end
+      res
+    end
+
+
     # Records a 'click' event for the user's selected alternative
     # Params:
     # +context+:: a web context that responds to :cookies (for example- a Controller (ActionController::Base))
