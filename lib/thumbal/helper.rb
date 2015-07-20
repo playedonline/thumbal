@@ -127,7 +127,7 @@ module Thumbal
     # +context+:: a web context that responds to :cookies (for example- a Controller (ActionController::Base))
     # +game_id+:: the id of the model object that was clicked
     def record_thumb_click(context, game_id)
-      exp = Experiment.find(game_id)
+      exp = Experiment.find(game_id.to_s)
       if exp.present? and exp.winner.nil? #still active
         alt = get_user_alternative(exp, get_uuid(context), false)
         exp.alternatives.each do |a|
