@@ -63,6 +63,14 @@ module Thumbal
     self.user_id_cookie_key
   end
 
+  def user_id_signed=(is_signed)
+    @user_id_signed = is_signed
+  end
+
+  def user_id_signed
+    @user_id_signed || false
+  end
+
   # Call this method to modify defaults in your initializers.
   def configure
     self.configuration ||= Configuration.new

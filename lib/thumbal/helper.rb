@@ -20,9 +20,11 @@ module Thumbal
 
             test.thumbs.each do |thumb|
               #store experiment results
-              thumb.impressions = exp.get_alternative_participants(thumb.image.to_s)
-              thumb.clicks = exp.get_alternative_clicks(thumb.image.to_s)
-              thumb.save
+              thumb.impressions = exp.get_alternative_participants(thumb.image(:thumb).to_s)
+              thumb.clicks = exp.get_alternative_clicks(thumb.image(:thumb).to_s)
+              thumb.positive_clicks = exp.get_alternative_positive_clicks(thumb.image(:thumb).to_s)
+              thumb.negative_clicks = exp.get_alternative_negative_clicks(thumb.image(:thumb).to_s)
+              thumb.save!
             end
           end
 
@@ -33,11 +35,6 @@ module Thumbal
 
         end
       end
-
-      if exp.present?
-        exp.delete
-      end
-
 
       #start a new test for the game
       thumb_exp = ThumbnailExperiment.create(game_id: game_id) #create the experiment
@@ -76,7 +73,11 @@ module Thumbal
     #Gets the user's unique id from the cookie
     def get_uuid(context)
       @cookies = context.send(:cookies)
-      @cookies[user_id_cookie_key]
+      if user_id_signed
+        @cookies.signed[user_id_cookie_key]
+      else
+        @cookies[user_id_cookie_key]
+      end
     end
 
     def get_active_thumb_experiments_names(context)
@@ -91,13 +92,10 @@ module Thumbal
       if !browser.bot?
         active_test_names = ThumbnailExperiment.uniq.where(is_active: 1).pluck('game_id')
         active_test_names.each do |id|
-
           experiment = Thumbal::Experiment.find(id.to_s)
           if experiment.present?
-            res[id] = get_user_alternative(experiment, get_uuid(context))
+            res[id] = get_user_alternative(context,experiment, get_uuid(context),false)
           end
-
-
         end
       end
       res
@@ -112,7 +110,7 @@ module Thumbal
         if active_tests_for_name.present?
           experiment = Thumbal::Experiment.find(experiment_name.to_s)
           if experiment.present?
-            res[experiment_name.to_s] = get_user_alternative(experiment, get_uuid(context))
+            res[experiment_name.to_s] = get_user_alternative(context,experiment, get_uuid(context))
           end
 
         end
@@ -128,10 +126,13 @@ module Thumbal
     # +game_id+:: the id of the model object that was clicked
     def record_thumb_click(context, game_id)
       exp = Experiment.find(game_id.to_s)
+      puts "exp:#{exp}"
       if exp.present? and exp.winner.nil? #still active
-        alt = get_user_alternative(exp, get_uuid(context), false)
+        alt = get_user_alternative(context,exp, get_uuid(context), false)
+        puts "alt:#{alt}"
         exp.alternatives.each do |a|
           if a.name == alt
+            puts "record click #{alt}"
             a.record_click
           end
         end
@@ -150,7 +151,7 @@ module Thumbal
 
       exp = Experiment.find(game_id)
       if exp.present? and exp.winner.nil? #still active
-        alt = get_user_alternative(exp, get_uuid(context), false)
+        alt = get_user_alternative(context, exp, get_uuid(context), false)
         exp.alternatives.each do |a|
           if a.name == alt
             if game_play_time >= critical_play_time
@@ -161,8 +162,19 @@ module Thumbal
           end
         end
       end
-
     end
+
+    def record_play_time_click_result_by_alternative_index(alternative_index, game_id, game_play_time, critical_play_time=20)
+      exp = Experiment.find(game_id)
+      if exp.present? and exp.winner.nil? #still active
+        if game_play_time >= critical_play_time
+          exp.alternatives[alternative_index.to_i].record_positive_click
+        else
+          exp.alternatives[alternative_index.to_i].record_negative_click
+        end
+      end
+    end
+
 
 
     # Updates experiment data in the database. Usually called when reaching max_participants.
@@ -174,13 +186,13 @@ module Thumbal
       active_tests = ThumbnailExperiment.where(game_id: game_id, is_active: 1)
 
       active_tests.each do |test|
-        test.thumbs.each do |alternative|
-          alt_name = alternative.image(:thumb).to_s
-          alternative.impressions = experiment.get_alternative_participants(alt_name)
-          alternative.clicks = experiment.get_alternative_clicks(alt_name)
-          alternative.positive_clicks = experiment.get_alternative_positive_clicks(alt_name)
-          alternative.negative_clicks = experiment.get_alternative_negative_clicks(alt_name)
-          alternative.save
+        test.thumbs.each do |thumb|
+          alt_name = thumb.image(:thumb).to_s
+          thumb.impressions = experiment.get_alternative_participants(alt_name)
+          thumb.clicks = experiment.get_alternative_clicks(alt_name)
+          thumb.positive_clicks = experiment.get_alternative_positive_clicks(alt_name)
+          thumb.negative_clicks = experiment.get_alternative_negative_clicks(alt_name)
+          thumb.save
         end
 
         if finish
@@ -203,8 +215,15 @@ module Thumbal
       exp = Experiment.find(model_id.to_s)
       return nil if exp.nil?
 
-      get_user_alternative(exp, uuid, false)
+      get_user_alternative(context,exp, uuid, false)
 
+    end
+
+    def get_alternative_id_for_user_by_model_id(model_id,context)
+      exp = Experiment.find(model_id.to_s)
+      return nil if exp.nil?
+
+      get_user_alternative_id(context,exp)
     end
 
     def get_experiment_version(model_id)
@@ -217,36 +236,53 @@ module Thumbal
 
     protected
 
+    def get_user_alternative_id(context,experiment)
+      exp_cookie_name = "thumbal_#{experiment.name}_#{experiment.version}"
+      cookies = context.send(:cookies)
+      cookies.signed[exp_cookie_name]
+    end
+
     # Gets an alternative for the user- checks if the experiment is still running and if it's a new user. Otherwise get winner/value form redis cache.
     # Params:
     # +experiment+:: the experiment to select an alternative from
-    def get_user_alternative(experiment, uuid, increase_impression=true)
+    def get_user_alternative(context,experiment, uuid, increase_impression=true)
+      exp_cookie_name = "thumbal_#{experiment.name}_#{experiment.version}"
+      cookies = context.send(:cookies)
 
       if !experiment.winner.nil?
         ret = experiment.winner.name
+        cookies[exp_cookie_name].delete
       else
-        if Thumbal.redis.hget("#{experiment.name}:users", "#{uuid}")
-          ret = Thumbal.redis.hget("#{experiment.name}:users", "#{uuid}")
-          if increase_impression
-            experiment[ret].increment_participation
-          end
-
-          if experiment.is_maxed
-            finish_experiment(experiment)
-          end
-
-        else
           if experiment.is_maxed
             finish_experiment(experiment)
             ret = experiment.winner.name
           else
-            ret = experiment.choose(increase_impression)
+
+            # if user was previously enrolled, get his assigned alternative from the cookie
+            if  cookies[exp_cookie_name].present?
+              alt_index = cookies.signed[exp_cookie_name].to_i
+              ret = experiment.alternatives[alt_index].name
+            # If an actual impression is being made and user wasn't previously enrolled, enroll the user, increment user count and return the user assigned alternative
+            elsif increase_impression
+              curr_count = experiment.increment_users.to_i
+              #puts "curr_count:#{curr_count}"
+              alt_index = curr_count % experiment.alternatives.length
+              #puts "alt_index:#{alt_index}"
+              cookies.signed[exp_cookie_name] = { :value => alt_index, :expires => 3.weeks.from_now }
+              #puts "exp_cookie_name:#{exp_cookie_name}"
+              ret = experiment.alternatives[alt_index].name
+              #puts "experiment:#{experiment}"
+              #puts "ret:#{ret}"
+            end
+            if increase_impression
+              experiment.alternatives[alt_index].increment_participation
+            end
           end
-        end
       end
-      Thumbal.redis.hset("#{experiment.name}:users", "#{uuid}", ret)
       ret
     end
+
+
 
     def finish_experiment(experiment)
       experiment.set_winner
@@ -255,5 +291,7 @@ module Thumbal
         call_reset_cache_hook
       end
     end
+
+
   end
 end

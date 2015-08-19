@@ -106,6 +106,8 @@ module Thumbal
     def save
       Thumbal.redis.hsetnx key, 'participant_count', 0
       Thumbal.redis.setnx key+':click', 0
+      Thumbal.redis.setnx key+':negative_click',0
+      Thumbal.redis.setnx key+':positive_click',0
 
     end
 
@@ -121,7 +123,10 @@ module Thumbal
 
     def delete
       Thumbal.redis.del(key)
-      Thumbal.redis.del(key+":click")
+      Thumbal.redis.hdel(key, 'participant_count')
+      Thumbal.redis.del(key+':click')
+      Thumbal.redis.del(key+':negative_click')
+      Thumbal.redis.del(key+':positive_click')
     end
 
     private

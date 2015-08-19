@@ -46,7 +46,7 @@ module Thumbal
 
       if params['exp_id'].present?
         exp = ThumbnailExperiment.find(params['exp_id'])
-        exp.delete
+        exp.destroy
 
       end
 

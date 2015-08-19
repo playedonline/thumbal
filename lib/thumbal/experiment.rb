@@ -4,6 +4,7 @@ module Thumbal
     attr_accessor :name
     attr_accessor :alternatives
     attr_accessor :max_participants
+    attr_accessor :user_count
 
     def initialize(name, alternatives=nil, max_participants=nil)
       @name = name.to_s
@@ -25,13 +26,6 @@ module Thumbal
       obj
     end
 
-    def self.find_or_create(label, *alternatives)
-
-      exp = self.new label, :alternatives => alternatives
-      exp.save
-      exp
-    end
-
     def save
       validate!
 
@@ -45,17 +39,9 @@ module Thumbal
 
         Thumbal.redis.set("%s:max_participants" % name, max_participants)
       else
-
-        existing_alternatives = load_alternatives_from_redis
-        unless existing_alternatives == @alternatives.map(&:name)
+        if (sync_redis)
+          # If redis synced was needed reset experiment fields
           reset
-          @alternatives.each(&:delete)
-          Thumbal.redis.lrange(@name, 0, -1).redis.del(@name)
-          @alternatives.reverse.each do |a|
-            Thumbal.redis.lrange(@name, 0, -1).redis.lpush(name, a.name)
-            a.set_unique_id self.version
-          end
-
         end
       end
 
@@ -93,16 +79,6 @@ module Thumbal
           Thumbal::Alternative.new(alternative, @name)
         end
       end
-    end
-
-    def choose(increase_impression=true)
-
-      available_alternatives = get_available_alternatives
-      alt = available_alternatives.sample
-      if increase_impression
-        alt.increment_participation
-      end
-      alt.name
     end
 
 
@@ -145,6 +121,14 @@ module Thumbal
 
     def participant_count
       alternatives.inject(0) { |sum, a| sum + a.participant_count }
+    end
+
+    def user_count
+      Thumbal.redis.get "#{self.key}:participants"
+    end
+
+    def increment_users
+      Thumbal.redis.incrby "#{self.key}:participants",1
     end
 
     def reset_winner
@@ -217,10 +201,6 @@ module Thumbal
       end
     end
 
-    def goals_key
-      "#{name}:goals"
-    end
-
     def finished_key
       "#{key}:finished"
     end
@@ -239,11 +219,15 @@ module Thumbal
     def delete
       alternatives.each(&:delete)
       reset_winner
-      Thumbal.redis.del("#{self.name}:users")
+      #Thumbal.redis.del("#{self.name}:users")
+      Thumbal.redis.del("#{self.name}:participants")
+      #Remove experiment from active experiments set
       Thumbal.redis.srem(:experiments, name)
+      #Delete Alternative list for this experiment
       Thumbal.redis.del(name)
-      increment_version
+       increment_version
     end
+
 
     def load_from_redis
       self.alternatives = load_alternatives_from_redis
@@ -303,6 +287,25 @@ module Thumbal
 
     protected
 
+    # Check if redis data lines up with experiment object, and if not replace redis data. return true if sync was needed
+    def sync_redis
+
+      existing_alternatives = load_alternatives_from_redis
+      sync_needed =  !(existing_alternatives == @alternatives.map(&:name))
+      if sync_needed
+        #Delete past alternative fields for this experiment
+        existing_alternatives.map{|alt_name| Alternative.new(alt_name,@name)}.each(&:delete)
+        # Delete past alternative list for this experiment
+        Thumbal.redis.del(@name)
+        # Add current alternatives to alternative list
+        @alternatives.reverse.each do |a|
+          Thumbal.redis.lpush(@name, a.name)
+          a.set_unique_id self.version
+        end
+      end
+      sync_needed
+    end
+
     def experiment_config_key
       "experiment_configurations/#{@name}"
     end
@@ -310,23 +313,10 @@ module Thumbal
 
     def load_alternatives_from_redis
       Thumbal.redis.lrange(@name, 0, -1)
-
     end
 
     def is_alternative_maxed(alternative)
       alternative.participant_count >= max_participants
-    end
-
-    #the alternatives that haven't reached max participants yet
-    def get_available_alternatives
-
-      ans = []
-      alternatives.each do |alt|
-        unless is_alternative_maxed(alt)
-          ans << alt
-        end
-      end
-      ans
     end
 
   end
